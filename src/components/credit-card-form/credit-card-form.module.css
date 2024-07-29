@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto+Mono');
+
+.content {
+  min-width: 280px;
+}
+
+.input {
+  font-size: 16px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #cecece;
+  font-family: 'Roboto Mono', monospace;
+}
+
+.inputFullWidth {
+  width: 100%;
+}
+
+.formItemsRow {
+  display: flex;
+  justify-content: space-between;
+}
+
+.formItem {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.formItemCvv,
+.formItemExp {
+  width: 50%;
+}
+
+.formItemFirstName,
+.formItemExp {
+  margin-right: 10px;
+}
+
+.inputCvv,
+.inputExp {
+  width: 100px;
+  text-align: center;
+}
+
+.inputFirstName,
+.inputLastName {
+  width: 100%;
+}
+
+.submitButton {
+  width: 100%;
+  background-color: rgb(63, 100, 249);
+  border-radius: 6px;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+@media screen and (max-width: 350px) {
+  .inputCvv,
+  .inputExp {
+    width: 100%;
+  }
+}
