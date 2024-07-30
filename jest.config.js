@@ -10,6 +10,8 @@ export default {
     '!**/coverage/**',
     '!**/jest.config.js',
   ],
+  // TechDebt: Figure out why jest does not load CSS modules properly and remove the "ignoreCodes"
+  // and globals below when configure jest properly.
   globals: {
     'ts-jest': {
       diagnostics: {

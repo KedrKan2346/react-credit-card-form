@@ -26,4 +26,5 @@ Example of valid `Visa` card: `5555555555554444`;
 
 ## Possible improvements
 1. Probably 3 or 4 digits code should be decided based on card type during validation.
-2. Add more tests
+2. Figure out why `CSS module` is not loaded in `jest` integration tests.
+3. Add more tests

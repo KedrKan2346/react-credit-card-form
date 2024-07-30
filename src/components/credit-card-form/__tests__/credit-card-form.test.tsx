@@ -4,6 +4,8 @@ import '@testing-library/jest-dom';
 import { CreditCardForm } from '../CreditCardForm';
 import { CreditCardFormState } from '../form';
 
+// TechDebt: These CSS modules mocks are workarounds.
+// Figure out why jest does not load CSS modules properly.
 jest.mock('../credit-card-form.module.css', () => {
   return {
     __esModule: true,
