@@ -39,7 +39,7 @@ export function formatExpirationDate(value: string): string {
 
   // add separator automatically if does not exist yet
   if (value.length > 2 && !value.includes(DATE_SEPARATOR)) {
-    return [value.substring(0, 2), DATE_SEPARATOR, value[2]].join('');
+    return value.replace(/^(\d{2})(\d+)/, `$1${DATE_SEPARATOR}$2`);
   }
 
   // add leading month's zero when user enter separator
@@ -92,7 +92,7 @@ export function formatZipCode(value: string): string {
 
   // add separator automatically if does not exist yet
   if (value.length > 5 && !value.includes(NUMERIC_GROUPS_SEPARATOR)) {
-    return [value.substring(0, 5), NUMERIC_GROUPS_SEPARATOR, value[5]].join('');
+    return value.replace(/^(\d{5})(\d+)/, `$1${NUMERIC_GROUPS_SEPARATOR}$2`);
   }
 
   return value;
