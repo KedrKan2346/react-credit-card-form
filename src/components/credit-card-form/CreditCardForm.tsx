@@ -29,7 +29,6 @@ export function CreditCardForm({
   disableStrictCreditCardValidation = false,
 }: CreditCardFormProps) {
   const {
-    register,
     control,
     handleSubmit: createSubmitHandler,
     formState: { errors },
@@ -123,27 +122,46 @@ export function CreditCardForm({
         <div className={styles.formItemsRow}>
           <div className={classnames(styles.formItem, styles.formItemFirstName)}>
             <label htmlFor={`${formName}-first-name`}>First Name</label>
-            <input
-              type="text"
-              className={classnames(styles.input, styles.inputFirstName)}
-              id={`${formName}-first-name`}
-              aria-label="First Name"
-              autoComplete="given-name"
-              maxLength={FORM_FIELD_MAX_LENGTH.firstName}
-              {...register('firstName')}
+            <Controller
+              control={control}
+              name="firstName"
+              render={({ field: { value, ...rest } }) => {
+                return (
+                  <input
+                    type="text"
+                    className={classnames(styles.input, styles.inputFirstName)}
+                    id={`${formName}-first-name`}
+                    aria-label="First Name"
+                    autoComplete="given-name"
+                    maxLength={FORM_FIELD_MAX_LENGTH.firstName}
+                    value={value}
+                    {...rest}
+                  />
+                );
+              }}
             />
+
             <FieldErrorMessage fieldError={errors.firstName} />
           </div>
           <div className={styles.formItem}>
             <label htmlFor={`${formName}-last-name`}>Last Name</label>
-            <input
-              type="text"
-              className={classnames(styles.input, styles.inputLastName)}
-              id={`${formName}-last-name`}
-              aria-label="Last Name"
-              autoComplete="family-name"
-              maxLength={FORM_FIELD_MAX_LENGTH.lastName}
-              {...register('lastName')}
+            <Controller
+              control={control}
+              name="lastName"
+              render={({ field: { value, ...rest } }) => {
+                return (
+                  <input
+                    type="text"
+                    className={classnames(styles.input, styles.inputLastName)}
+                    id={`${formName}-last-name`}
+                    aria-label="Last Name"
+                    autoComplete="family-name"
+                    maxLength={FORM_FIELD_MAX_LENGTH.lastName}
+                    value={value}
+                    {...rest}
+                  />
+                );
+              }}
             />
             <FieldErrorMessage fieldError={errors.lastName} />
           </div>
