@@ -28,3 +28,6 @@ Example of valid `Visa` card: `5555555555554444`;
 1. Probably 3 or 4 digits code should be decided based on card type during validation.
 2. Figure out why `CSS module` is not loaded in `jest` integration tests.
 3. Add more tests
+
+## Known Issues
+In dev mode when app is started the `[unocss] Entry module not found. Did you add `import 'uno.css'` in your main entry?` overlay error appears. The error is not reproducible in production mode as it is related to server `hmr`. It seems to be a known issue [Bug: `unocss` entry module not found, have you add import 'uno.css' in your main entry?](https://github.com/storybookjs/storybook/issues/26744)
