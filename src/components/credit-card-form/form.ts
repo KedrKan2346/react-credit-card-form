@@ -1,5 +1,6 @@
-import { z } from 'zod';
+import { z, ZodCustomIssue } from 'zod';
 import cardValidator from 'card-validator';
+import { endOfMonth, parse } from 'date-fns';
 import { isNumber } from '../../utils/number';
 
 export interface CreditCardFormState {
@@ -32,90 +33,118 @@ function removeAllSeparators(value: string | null): string {
 
 export function createFormValidationSchema(options: { disableStrictCreditCardValidation: boolean }) {
   const { disableStrictCreditCardValidation } = options;
-  return z.object({
-    cardNumber: requiredStringConstraint.refine(
-      (val) => {
-        const trimmedValue = removeAllSeparators(val);
-        const numberValidation = cardValidator.number(trimmedValue);
-
-        if (!disableStrictCreditCardValidation) {
-          return numberValidation.isValid;
-        }
-
-        return numberValidation.isValid || numberValidation.isPotentiallyValid;
-      },
-      {
-        message: 'Invalid card number',
-      }
-    ),
-    cardExp: requiredStringConstraint
-      .refine(
+  return z
+    .object({
+      cardNumber: requiredStringConstraint.refine(
         (val) => {
-          return /^\d{2}\/\d{2}$/.test(val);
+          const trimmedValue = removeAllSeparators(val);
+          const numberValidation = cardValidator.number(trimmedValue);
+
+          if (!disableStrictCreditCardValidation) {
+            return numberValidation.isValid;
+          }
+
+          return numberValidation.isValid || numberValidation.isPotentiallyValid;
         },
         {
-          message: 'Invalid expiration date format MM/YY',
-        }
-      )
-      .refine(
-        (val) => {
-          const valParts = val ? val.split('/') : [];
-          const monthString = valParts[0];
-          if (!isNumber(monthString)) {
-            return false;
-          }
-          const month = parseInt(monthString);
-          if (month < 1 || month > 12) {
-            return false;
-          }
-          return true;
-        },
-        {
-          message: 'Invalid month. Valid values are 1-12',
+          message: 'Invalid card number',
         }
       ),
-    cardCvv: requiredStringConstraint
-      .min(3, {
-        message: 'Must contain 3 digits (4 for Amex)',
-      })
-      .refine(
-        (val) => {
-          const trimmedValue = removeAllSeparators(val);
-          return /^[0-9]+$/.test(trimmedValue);
-        },
-        {
-          message: 'Must contain numbers only',
-        }
-      ),
-    firstName: requiredStringConstraint.refine((val) => /^[A-Za-z ]+$/.test(val), {
-      message: 'Must contain alphabetic characters or space',
-    }),
-    lastName: requiredStringConstraint.refine((val) => /^[A-Za-z ]+$/.test(val), {
-      message: 'Must contain alphabetic characters or space',
-    }),
-    zipCode: requiredStringConstraint
-      .refine(
-        (val) => {
-          const trimmedValue = removeAllSeparators(val);
-          return /^[0-9]+$/.test(trimmedValue);
-        },
-        {
-          message: 'Must contain numbers only',
-        }
-      )
-      .refine(
-        (val) => {
-          const trimmedValue = removeAllSeparators(val);
-          if (trimmedValue.length === 5 || trimmedValue.length === 9) {
+      cardExp: requiredStringConstraint
+        .refine(
+          (val) => {
+            return /^\d{2}\/\d{2}$/.test(val);
+          },
+          {
+            message: 'Invalid expiration date format MM/YY',
+          }
+        )
+        .refine(
+          (val) => {
+            const valParts = val ? val.split('/') : [];
+            const monthString = valParts[0];
+            if (!isNumber(monthString)) {
+              return false;
+            }
+            const month = parseInt(monthString);
+            if (month < 1 || month > 12) {
+              return false;
+            }
             return true;
+          },
+          {
+            message: 'Invalid month. Valid values are 1-12',
           }
-          return false;
-        },
-        {
-          message: 'Zip can be 5 or 9 characters long',
+        )
+        .refine(
+          (val) => {
+            const endOfMonthOfCvvDate = endOfMonth(parse(`01/${val}`, 'dd/MM/yy', new Date()));
+            return endOfMonthOfCvvDate >= new Date();
+          },
+          {
+            message: 'Date must be in the future',
+          }
+        ),
+      cardCvv: requiredStringConstraint
+        .min(3, {
+          message: 'Must contain 3 digits (4 for Amex)',
+        })
+        .refine(
+          (val) => {
+            const trimmedValue = removeAllSeparators(val);
+            return /^[0-9]+$/.test(trimmedValue);
+          },
+          {
+            message: 'Must contain numbers only',
+          }
+        ),
+      firstName: requiredStringConstraint.refine((val) => /^[A-Za-z ]+$/.test(val), {
+        message: 'Must contain alphabetic characters or space',
+      }),
+      lastName: requiredStringConstraint.refine((val) => /^[A-Za-z ]+$/.test(val), {
+        message: 'Must contain alphabetic characters or space',
+      }),
+      zipCode: requiredStringConstraint
+        .refine(
+          (val) => {
+            const trimmedValue = removeAllSeparators(val);
+            return /^[0-9]+$/.test(trimmedValue);
+          },
+          {
+            message: 'Must contain numbers only',
+          }
+        )
+        .refine(
+          (val) => {
+            const trimmedValue = removeAllSeparators(val);
+            if (trimmedValue.length === 5 || trimmedValue.length === 9) {
+              return true;
+            }
+            return false;
+          },
+          {
+            message: 'Zip can be 5 or 9 characters long',
+          }
+        ),
+    })
+    .superRefine((formFields, ctx) => {
+      const { cardNumber, cardCvv } = formFields;
+      const cvvLength = cardCvv?.length ?? 0;
+      if (cardNumber) {
+        const cardValidationResult = cardValidator.number(cardNumber);
+        if (cardValidationResult.card?.type === 'american-express' && cvvLength < 4) {
+          ctx.addIssue({
+            path: ['cardCvv'],
+            message: `Amex card should contain 4 digits`,
+          } as ZodCustomIssue);
+        } else if (cardValidationResult.card?.type !== 'american-express' && cvvLength > 3) {
+          ctx.addIssue({
+            path: ['cardCvv'],
+            message: `Should contain 3 digits`,
+          } as ZodCustomIssue);
         }
-      ),
-  });
+      }
+    });
 }
 
 export const FORM_FIELD_MAX_LENGTH = {
